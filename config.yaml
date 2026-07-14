@@ -1,0 +1,30 @@
+# Employee shown on the report header
+employee_name: "Yash Yelave"
+
+# Google Sheet ID (from the spreadsheet URL)
+# https://docs.google.com/spreadsheets/d/<SHEET_ID>/edit
+sheet_id: "1iJNnBwfCwaqixkW0G_IQBY7NjYGprf9c3E-5SFPgWNM"
+
+# Worksheet tab name (or leave empty to use the first sheet)
+worksheet: ""
+
+# Auth: oauth (recommended) | service_account
+# Use oauth when org policy blocks SA JSON keys
+# (iam.disableServiceAccountKeyCreation).
+auth_mode: oauth
+
+# OAuth Desktop client secret downloaded from Google Cloud Console
+credentials_path: "credentials/client_secret.json"
+
+# Saved after first browser login (auto-created)
+token_path: "credentials/token.json"
+
+# Project keywords — MVP TEMPORARY only.
+# Manual keyword → project map for grouping Output text.
+# Phase 2: AI will maintain this mapping dynamically (do not treat as long-term source of truth).
+project_keywords:
+  Supplychain: ConstructProcure
+  Review: AI Report Generation
+
+# Validation
+max_session_minutes: 360
