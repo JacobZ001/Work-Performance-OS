@@ -90,6 +90,31 @@ def render_markdown(data: MonthlyReportData) -> str:
             lines.append(f"- **[{w.rule}]** {w.message}{row}")
         lines.append("")
 
+    if data.evaluation:
+        ev = data.evaluation
+        meta = ""
+        if ev.provider or ev.model:
+            meta = f" _(provider: {ev.provider or '-'}, model: {ev.model or '-'})_"
+        lines.append(f"# AI Evaluation{meta}\n")
+        lines.append("## Overall Summary\n")
+        lines.append(f"{ev.overall_summary or '_None_'}\n")
+        lines.append("## Hours vs Described Work\n")
+        lines.append(f"{ev.hours_vs_work or '_None_'}\n")
+
+        def _bullets(title: str, items: list[str]) -> None:
+            lines.append(f"## {title}\n")
+            if items:
+                for item in items:
+                    lines.append(f"- {item}")
+            else:
+                lines.append("_None_")
+            lines.append("")
+
+        _bullets("Key Contributions", ev.key_contributions)
+        _bullets("Strengths", ev.strengths)
+        _bullets("Improvement Areas", ev.improvement_areas)
+        _bullets("Recommendations", ev.recommendations)
+
     return "\n".join(lines).rstrip() + "\n"
 
 

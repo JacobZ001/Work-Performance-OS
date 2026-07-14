@@ -5,8 +5,12 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass, field
 from difflib import SequenceMatcher
+from typing import TYPE_CHECKING
 
 from sheets import WorkLog
+
+if TYPE_CHECKING:
+    from ai_eval import AIEvaluation
 
 
 @dataclass
@@ -56,6 +60,7 @@ class MonthlyReportData:
     activities: list[WorkLog]
     submissions: list[WorkLog]
     warnings: list[WarningItem]
+    evaluation: AIEvaluation | None = None
 
 
 def compute_stats(logs: list[WorkLog]) -> MonthlyStats:

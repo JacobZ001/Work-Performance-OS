@@ -1,6 +1,7 @@
-"""Work Performance OS — MVP CLI.
+"""Work Performance OS — CLI.
 
-Generate a monthly Markdown work report from a Google Sheets work log.
+Generate a monthly Markdown work report from a Google Sheets work log,
+optionally with AI evaluation (OpenAI or Gemini).
 """
 
 from __future__ import annotations
@@ -10,14 +11,20 @@ import sys
 from pathlib import Path
 
 import yaml
+from dotenv import load_dotenv
 
+from ai_eval import run_evaluation
 from analyze import build_report
+from llm import create_llm
 from report import write_report
 from sheets import fetch_work_logs, filter_by_period
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_CONFIG = ROOT / "config.yaml"
 DEFAULT_OUTPUT = ROOT / "output"
+
+# Standardize secrets on project-root .env
+load_dotenv(ROOT / ".env")
 
 
 def load_config(path: Path) -> dict:
@@ -96,6 +103,8 @@ def main() -> int:
         worksheet = config.get("worksheet") or ""
         keyword_map = config.get("project_keywords") or {}
         max_session = int(config.get("max_session_minutes") or 360)
+        ai_cfg = config.get("ai") or {}
+        ai_enabled = bool(ai_cfg.get("enabled"))
 
         print(f"Fetching work logs for {period} (auth={auth_mode})…")
         all_logs = fetch_work_logs(
@@ -115,6 +124,22 @@ def main() -> int:
             keyword_map=keyword_map,
             max_session_minutes=max_session,
         )
+
+        if ai_enabled:
+            provider = (ai_cfg.get("provider") or "openai").strip().lower()
+            model = (ai_cfg.get("model") or "").strip()
+            if not model:
+                model = (
+                    "gemini-2.0-flash"
+                    if provider in ("gemini", "google")
+                    else "gpt-4o-mini"
+                )
+            print(f"Running AI evaluation ({provider} / {model})…")
+            client = create_llm(ai_cfg)
+            report_data.evaluation = run_evaluation(
+                report_data, client, provider=provider, model=model
+            )
+
         out_path = write_report(report_data, args.output_dir)
         print(f"Report written: {out_path}")
         return 0

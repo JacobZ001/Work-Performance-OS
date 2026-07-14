@@ -107,13 +107,57 @@ project_keywords:
   Review: AI Report Generation
 
 max_session_minutes: 360
+
+ai:
+  enabled: true
+  provider: openai
+  model: gpt-4o-mini
 ```
 
 **How to find `sheet_id`:**  
 `https://docs.google.com/spreadsheets/d/<SHEET_ID>/edit`
 
 **`project_keywords`:** MVP-only manual map (substring of `Output` → project name). Unmatched → `Uncategorized`.  
-**Later (Phase 2):** AI will maintain this mapping dynamically — keep the list small; do not treat it as permanent taxonomy.
+**Phase 2.2 (later):** AI will maintain this mapping dynamically — keep the list small.
+
+### 1.7b AI evaluation (Phase 2)
+
+In `config.yaml`:
+
+```yaml
+ai:
+  enabled: true
+  provider: openai          # openai | gemini
+  model: gpt-4o-mini        # or gemini-2.0-flash
+```
+
+Put API keys in the project-root **`.env`** file (never in yaml, never commit `.env`):
+
+```powershell
+copy .env.example .env
+```
+
+Edit `.env`:
+
+```env
+# OpenAI (when ai.provider: openai)
+OPENAI_API_KEY=sk-...
+
+# Gemini (when ai.provider: gemini) — either name works
+GEMINI_API_KEY=...
+# GOOGLE_API_KEY=...
+```
+
+Switch provider example:
+
+```yaml
+ai:
+  enabled: true
+  provider: gemini
+  model: gemini-2.0-flash
+```
+
+Set `ai.enabled: false` to skip AI and keep the MVP-only report.
 
 ### 1.8 First login
 
@@ -140,7 +184,8 @@ Your consent screen is **Internal**, but you signed in with a personal Gmail. Fi
 ### 2.1 (Optional) update config
 
 - Change `employee_name` or `sheet_id` as needed.
-- `project_keywords` is optional MVP scaffolding (AI will own this later); only tweak if grouping is clearly wrong.
+- `project_keywords` is optional MVP scaffolding (AI project mapping is Phase 2.2); only tweak if grouping is clearly wrong.
+- Toggle `ai.enabled` / `ai.provider` / `ai.model` as needed.
 - Usually you only pass the month on the CLI.
 
 ### 2.2 Run
@@ -157,6 +202,8 @@ python main.py 2026-06
 output/Monthly_Report_YYYY_MM.md
 ```
 
+The report includes Work Statistics, Project Summary, Activity Log, Submissions, Warnings, and (when `ai.enabled: true`) an **AI Evaluation** section.
+
 ### 2.4 Common errors
 
 | Message / situation | Fix |
@@ -169,6 +216,9 @@ output/Monthly_Report_YYYY_MM.md
 | Permission denied / spreadsheet not found | Share the Sheet with the Google account you logged in with |
 | `missing required columns` | Fix header row names in the Sheet |
 | Consent screen “app not verified” | Add yourself as a test user, or continue for testing |
+| `Missing API key` / `OPENAI_API_KEY` | Add `OPENAI_API_KEY=...` to project-root `.env` |
+| `Missing API key` / `GEMINI_API_KEY` | Add `GEMINI_API_KEY=...` (or `GOOGLE_API_KEY`) to `.env` |
+| Unsupported `ai.provider` | Use `openai` or `gemini` in config |
 
 ---
 

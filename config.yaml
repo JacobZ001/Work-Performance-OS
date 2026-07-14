@@ -21,10 +21,17 @@ token_path: "credentials/token.json"
 
 # Project keywords — MVP TEMPORARY only.
 # Manual keyword → project map for grouping Output text.
-# Phase 2: AI will maintain this mapping dynamically (do not treat as long-term source of truth).
+# Phase 2.2: AI will maintain this mapping dynamically (do not treat as long-term source of truth).
 project_keywords:
   Supplychain: ConstructProcure
   Review: AI Report Generation
 
 # Validation
 max_session_minutes: 360
+
+# Phase 2 AI evaluation (OpenAI or Gemini)
+# API keys live in project-root .env (see .env.example) — not in this file.
+ai:
+  enabled: true
+  provider: gemini          # openai | gemini
+  model: gemini-3.1-flash-lite       # e.g. gpt-4o-mini | gemini-2.0-flash

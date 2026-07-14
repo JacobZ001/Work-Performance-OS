@@ -124,6 +124,7 @@ Write `output/Monthly_Report_YYYY_MM.md`.
 # Activity Log
 # Submissions
 # Data Quality Warnings
+# AI Evaluation          # when ai.enabled
 ```
 
 ---
@@ -136,6 +137,8 @@ work-performance-os/
   sheets.py
   analyze.py
   report.py
+  llm.py
+  ai_eval.py
   config.yaml
   requirements.txt
   credentials/
@@ -154,8 +157,10 @@ work-performance-os/
 - Google Sheet ID
 - Credentials path
 - Employee name
-- `project_keywords` — **MVP temporary**; Phase 2 AI maintains project mapping dynamically
+- `project_keywords` — **MVP temporary**; Phase 2.2 AI maintains project mapping dynamically
 - Validation threshold (`max_session_minutes`)
+- `ai.enabled` / `ai.provider` (`openai` \| `gemini`) / `ai.model`
+- API keys in project-root `.env`: `OPENAI_API_KEY`, `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) — see `.env.example`
 
 ---
 
@@ -163,14 +168,23 @@ work-performance-os/
 
 **WorkLog:** date, start, end, duration_min, type, output, link  
 
-**Monthly report data:** statistics, projects, activities, submissions, warnings
+**Monthly report data:** statistics, projects, activities, submissions, warnings, evaluation (optional)
 
 ---
 
 # Phase 2 — AI
 
-- Evaluate whether described work is consistent with reported hours; add evaluation sections to the report.
-- **Dynamically maintain project mapping** (replace static `project_keywords` in config).
+**Done in this phase:**
+
+- OpenAI + Gemini provider adapters (`llm.py`)
+- Config-selected provider/model
+- AI Evaluation section in the Markdown report (hours vs described work, summary, strengths, improvements)
+
+**Phase 2.2 (next):**
+
+- Dynamically maintain project mapping (replace static `project_keywords`)
+
+**Deferred:** thin frontend
 
 ---
 
