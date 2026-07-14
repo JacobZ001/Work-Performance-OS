@@ -4,9 +4,9 @@ Guidance for AI coding agents and contributors working in this repository.
 
 ## Project overview
 
-Python CLI that reads a Google Sheets work log and writes a monthly Markdown report under `output/`. Optional Phase 2 AI evaluation (OpenAI or Gemini) appends an **AI Evaluation** section when `ai.enabled` is true.
+Python CLI that reads a Google Sheets work log and writes a monthly Markdown report under `output/`. Optional Phase 2 AI evaluation (OpenAI or Gemini) appends an **AI Evaluation** section when `ai.enabled` is true. Phase 2.1 adds `employee_context` so the model judges hours against the employee's real role and expected cadence.
 
-Entry point: `main.py`. Setup and usage: `docs/user_manual.md`. Product intent: `docs/draft_big_picture.md`.
+Entry point: `main.py`. Setup and usage: `docs/user_manual.md`. Development plan: `docs/roadmap.md`.
 
 ## Configuration and secrets
 
@@ -14,7 +14,7 @@ Keep non-secrets, string secrets, and Google credential files separate. Do not m
 
 | Location | Contents | Commit? |
 |----------|----------|---------|
-| `config.yaml` | App settings (sheet id, auth paths, `project_keywords`, `ai.enabled` / `provider` / `model`) | Yes |
+| `config.yaml` | App settings (sheet id, auth paths, `employee_name`, `employee_context`, `project_keywords`, `ai.enabled` / `provider` / `model`) | Yes |
 | `.env` | API keys only (`OPENAI_API_KEY`, `GEMINI_API_KEY` / `GOOGLE_API_KEY`) | **Never** |
 | `credentials/*.json` | Google OAuth client secret and saved token (or service account JSON) | **Never** |
 
@@ -80,6 +80,7 @@ chore: add AGENTS.md with repo and commit conventions
 - Match existing style in nearby files; prefer small, focused diffs.
 - Do not add unsolicited markdown docs beyond what the task needs.
 - AI provider adapters live in `llm.py`; evaluation prompt/parse in `ai_eval.py`; report rendering in `report.py`.
+- Put role / expected hours in `employee_context` (`config.yaml`); the eval prompt must receive it so AI does not assume full-time norms.
 - `project_keywords` in config is MVP-temporary; Phase 2.2 will replace static mapping with AI-maintained mapping — do not treat the keyword map as long-term taxonomy.
 
 ## Running locally

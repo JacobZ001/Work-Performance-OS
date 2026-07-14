@@ -100,6 +100,7 @@ def main() -> int:
         )
 
         employee = config.get("employee_name") or "Employee"
+        employee_context = (config.get("employee_context") or "").strip()
         worksheet = config.get("worksheet") or ""
         keyword_map = config.get("project_keywords") or {}
         max_session = int(config.get("max_session_minutes") or 360)
@@ -137,7 +138,11 @@ def main() -> int:
             print(f"Running AI evaluation ({provider} / {model})…")
             client = create_llm(ai_cfg)
             report_data.evaluation = run_evaluation(
-                report_data, client, provider=provider, model=model
+                report_data,
+                client,
+                provider=provider,
+                model=model,
+                employee_context=employee_context,
             )
 
         out_path = write_report(report_data, args.output_dir)

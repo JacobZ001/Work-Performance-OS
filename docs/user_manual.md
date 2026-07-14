@@ -96,6 +96,11 @@ Notes:
 
 ```yaml
 employee_name: "Alex Chen"
+# Optional: background for AI evaluation (role, expected hours, constraints)
+employee_context: |
+  Role: university intern (still enrolled).
+  Expected cadence: ~4 hours/day, ~25 hours/week.
+  Shorter days than full-time are normal — do not treat as suspicious by default.
 sheet_id: "1abc...xyz"
 worksheet: ""
 auth_mode: oauth
@@ -117,10 +122,12 @@ ai:
 **How to find `sheet_id`:**  
 `https://docs.google.com/spreadsheets/d/<SHEET_ID>/edit`
 
+**`employee_context`:** free-text notes the AI reads when evaluating hours vs work (role, expected load, constraints). Leave empty only if you accept a generic full-time baseline.
+
 **`project_keywords`:** MVP-only manual map (substring of `Output` → project name). Unmatched → `Uncategorized`.  
 **Phase 2.2 (later):** AI will maintain this mapping dynamically — keep the list small.
 
-### 1.7b AI evaluation (Phase 2)
+### 1.7b AI evaluation (Phase 2 / 2.1)
 
 In `config.yaml`:
 
@@ -159,6 +166,8 @@ ai:
 
 Set `ai.enabled: false` to skip AI and keep the MVP-only report.
 
+Fill `employee_context` so the model judges against the real expected cadence (e.g. intern ~4h/day), not a full-time default.
+
 ### 1.8 First login
 
 Sign in with the **same** Google account that can open the Work Log Sheet (and that you added as a Test user if the app is in Testing).
@@ -183,7 +192,7 @@ Your consent screen is **Internal**, but you signed in with a personal Gmail. Fi
 
 ### 2.1 (Optional) update config
 
-- Change `employee_name` or `sheet_id` as needed.
+- Change `employee_name`, `employee_context`, or `sheet_id` as needed.
 - `project_keywords` is optional MVP scaffolding (AI project mapping is Phase 2.2); only tweak if grouping is clearly wrong.
 - Toggle `ai.enabled` / `ai.provider` / `ai.model` as needed.
 - Usually you only pass the month on the CLI.
@@ -242,4 +251,4 @@ If keys stay blocked, ask IT for either:
 
 ## Related docs
 
-- Product scope & roadmap: [draft_big_picture.md](draft_big_picture.md)
+- Product roadmap: [roadmap.md](roadmap.md)

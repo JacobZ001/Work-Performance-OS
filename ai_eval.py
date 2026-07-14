@@ -13,21 +13,27 @@ MAX_ACTIVITIES = 80
 
 SYSTEM_PROMPT = """\
 You are a performance review assistant for engineering managers.
-Given an employee's monthly work log summary, evaluate whether the described
-work appears consistent with the reported hours, and write a concise manager-
+Given an employee's monthly work log summary and optional employee context
+(role, expected hours, constraints), evaluate whether the described work
+appears consistent with the reported hours, and write a concise manager-
 facing evaluation.
+
+When employee context is provided, treat it as ground truth for expected
+workload and role. Do not flag shorter days or lower weekly totals as
+suspicious if they match the stated expected cadence. Judge consistency
+of described work against that cadence, not against a full-time baseline.
 
 Respond with ONLY valid JSON (no markdown fences) using this schema:
 {
   "overall_summary": "string",
-  "hours_vs_work": "string — match assessment and risks",
+  "hours_vs_work": "string — match assessment and risks vs expected cadence",
   "key_contributions": ["string", ...],
   "strengths": ["string", ...],
   "improvement_areas": ["string", ...],
   "recommendations": ["string", ...]
 }
-Be factual, specific, and skeptical of vague outputs paired with long hours.
-If data is thin, say so clearly.
+Be factual, specific, and skeptical of vague outputs paired with long hours
+relative to the employee's expected load. If data is thin, say so clearly.
 """
 
 
@@ -80,7 +86,10 @@ def _parse_evaluation(raw: str, provider: str, model: str) -> AIEvaluation:
     )
 
 
-def build_eval_prompt(data: MonthlyReportData) -> str:
+def build_eval_prompt(
+    data: MonthlyReportData,
+    employee_context: str = "",
+) -> str:
     stats = data.stats
     type_lines = [
         f"  - {name}: {hours}h ({stats.percent_by_type.get(name, 0)}%)"
@@ -115,10 +124,18 @@ def build_eval_prompt(data: MonthlyReportData) -> str:
         for w in data.warnings[:30]
     ] or ["- (none)"]
 
+    context = (employee_context or "").strip()
+    context_block = (
+        f"## Employee context\n{context}\n"
+        if context
+        else "## Employee context\n(none provided — do not assume full-time)\n"
+    )
+
     return f"""\
 Employee: {data.employee}
 Period: {data.period}
 
+{context_block}
 ## Work statistics
 - Total hours: {stats.total_hours} ({stats.total_minutes} min)
 - Working days: {stats.working_days}
@@ -142,7 +159,8 @@ def run_evaluation(
     client: LLMClient,
     provider: str,
     model: str,
+    employee_context: str = "",
 ) -> AIEvaluation:
-    user_prompt = build_eval_prompt(data)
+    user_prompt = build_eval_prompt(data, employee_context=employee_context)
     raw = client.complete(SYSTEM_PROMPT, user_prompt)
     return _parse_evaluation(raw, provider=provider, model=model)

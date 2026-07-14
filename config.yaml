@@ -1,6 +1,15 @@
 # Employee shown on the report header
 employee_name: "Yash Yelave"
 
+# Free-text background for AI evaluation (role, expected hours, constraints).
+# Injected into the eval prompt so the model judges against the real cadence.
+employee_context: |
+  Role: university intern (still enrolled as a student).
+  Expected cadence: about 4 hours per working day, roughly 25 hours per week.
+  Shorter daily sessions and lower monthly totals than a full-time engineer are
+  normal for this role — do not treat them as underperformance or as suspicious
+  by default. Judge consistency of described work against this expected load.
+
 # Google Sheet ID (from the spreadsheet URL)
 # https://docs.google.com/spreadsheets/d/<SHEET_ID>/edit
 sheet_id: "1iJNnBwfCwaqixkW0G_IQBY7NjYGprf9c3E-5SFPgWNM"
@@ -31,6 +40,7 @@ max_session_minutes: 360
 
 # Phase 2 AI evaluation (OpenAI or Gemini)
 # API keys live in project-root .env (see .env.example) — not in this file.
+# Phase 2.1: employee_context above is passed into the eval prompt.
 ai:
   enabled: true
   provider: gemini          # openai | gemini

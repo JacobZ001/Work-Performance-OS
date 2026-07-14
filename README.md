@@ -4,4 +4,4 @@ Python CLI that turns a Google Sheets work log into a monthly Markdown report, w
 
 **Setup & usage:** see [docs/user_manual.md](docs/user_manual.md)
 
-**Product brief:** see [docs/draft_big_picture.md](docs/draft_big_picture.md)
+**Product roadmap:** see [docs/roadmap.md](docs/roadmap.md)
