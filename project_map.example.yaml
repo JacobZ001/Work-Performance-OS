@@ -1,0 +1,5 @@
+# Example learned project map (Phase 2.2).
+# Copy to project_map.yaml (gitignored) or let the CLI create it on first AI run.
+# Seed keywords still live in config.yaml under project_keywords.
+
+keywords: {}

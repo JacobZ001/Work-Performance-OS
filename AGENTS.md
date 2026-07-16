@@ -4,7 +4,7 @@ Guidance for AI coding agents and contributors working in this repository.
 
 ## Project overview
 
-Python CLI that reads a Google Sheets work log and writes a monthly Markdown report under `output/`. Optional Phase 2 AI evaluation (OpenAI or Gemini) appends an **AI Evaluation** section when `ai.enabled` is true. Phase 2.1 adds `employee_context` so the model judges hours against the employee's real role and expected cadence.
+Python CLI that reads a Google Sheets work log and writes a monthly Markdown report under `output/`. Optional Phase 2 AI evaluation (OpenAI or Gemini) appends an **AI Evaluation** section when `ai.enabled` is true. Phase 2.1 adds `employee_context` so the model judges hours against the employee's real role and expected cadence. Phase 2.2 uses AI to classify unmatched outputs and persist learned rules in `project_map.yaml`.
 
 Entry point: `main.py`. Setup and usage: `docs/user_manual.md`. Development plan: `docs/roadmap.md`.
 
@@ -14,7 +14,9 @@ Keep non-secrets, string secrets, and Google credential files separate. Do not m
 
 | Location | Contents | Commit? |
 |----------|----------|---------|
-| `config.yaml` | App settings (sheet id, auth paths, `employee_name`, `employee_context`, `project_keywords`, `ai.enabled` / `provider` / `model`) | Yes |
+| `config.yaml` | App settings (sheet id, auth paths, `employee_name`, `employee_context`, seed `project_keywords`, `project_map_path`, `ai.*`) | Yes |
+| `project_map.example.yaml` | Empty learned-map template | Yes |
+| `project_map.yaml` | Learned keyword → project rules (AI-updated) | **Never** |
 | `.env` | API keys only (`OPENAI_API_KEY`, `GEMINI_API_KEY` / `GOOGLE_API_KEY`) | **Never** |
 | `credentials/*.json` | Google OAuth client secret and saved token (or service account JSON) | **Never** |
 
@@ -28,6 +30,7 @@ Keep non-secrets, string secrets, and Google credential files separate. Do not m
 
 - `.env`
 - `credentials/*` (except `credentials/.gitkeep` if present)
+- `project_map.yaml` (learned local map; commit `project_map.example.yaml` only)
 - Generated reports under `output/` (except keepfiles)
 - Virtualenvs, `__pycache__`, IDE junk
 
@@ -79,9 +82,9 @@ chore: add AGENTS.md with repo and commit conventions
 
 - Match existing style in nearby files; prefer small, focused diffs.
 - Do not add unsolicited markdown docs beyond what the task needs.
-- AI provider adapters live in `llm.py`; evaluation prompt/parse in `ai_eval.py`; report rendering in `report.py`.
+- AI provider adapters live in `llm.py`; evaluation prompt/parse in `ai_eval.py`; project mapping in `project_map.py`; report rendering in `report.py`.
 - Put role / expected hours in `employee_context` (`config.yaml`); the eval prompt must receive it so AI does not assume full-time norms.
-- `project_keywords` in config is MVP-temporary; Phase 2.2 will replace static mapping with AI-maintained mapping — do not treat the keyword map as long-term taxonomy.
+- `project_keywords` is a seed only; AI-learned rules go in `project_map.yaml` via `project_map.py`. Do not grow a large hand-maintained keyword catalog.
 
 ## Running locally
 

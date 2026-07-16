@@ -111,6 +111,8 @@ project_keywords:
   Supplychain: ConstructProcure
   Review: AI Report Generation
 
+project_map_path: "project_map.yaml"
+
 max_session_minutes: 360
 
 ai:
@@ -124,10 +126,11 @@ ai:
 
 **`employee_context`:** free-text notes the AI reads when evaluating hours vs work (role, expected load, constraints). Leave empty only if you accept a generic full-time baseline.
 
-**`project_keywords`:** MVP-only manual map (substring of `Output` → project name). Unmatched → `Uncategorized`.  
-**Phase 2.2 (later):** AI will maintain this mapping dynamically — keep the list small.
+**`project_keywords`:** seed map only (substring of `Output` → project name). Unmatched rows are classified by AI when `ai.enabled` is true.
 
-### 1.7b AI evaluation (Phase 2 / 2.1)
+**`project_map_path` / `project_map.yaml`:** learned keyword → project rules written by AI (gitignored). Start from `project_map.example.yaml` or let the first AI run create the file. Seed + learned maps are merged each run; AI off → keyword-only fallback.
+
+### 1.7b AI evaluation (Phase 2 / 2.1) and project mapping (Phase 2.2)
 
 In `config.yaml`:
 
@@ -164,7 +167,7 @@ ai:
   model: gemini-2.0-flash
 ```
 
-Set `ai.enabled: false` to skip AI and keep the MVP-only report.
+Set `ai.enabled: false` to skip AI evaluation **and** AI project mapping (seed keywords only).
 
 Fill `employee_context` so the model judges against the real expected cadence (e.g. intern ~4h/day), not a full-time default.
 
@@ -193,7 +196,7 @@ Your consent screen is **Internal**, but you signed in with a personal Gmail. Fi
 ### 2.1 (Optional) update config
 
 - Change `employee_name`, `employee_context`, or `sheet_id` as needed.
-- `project_keywords` is optional MVP scaffolding (AI project mapping is Phase 2.2); only tweak if grouping is clearly wrong.
+- Keep `project_keywords` small (seed only); prefer letting AI grow `project_map.yaml`.
 - Toggle `ai.enabled` / `ai.provider` / `ai.model` as needed.
 - Usually you only pass the month on the CLI.
 

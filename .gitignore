@@ -3,6 +3,9 @@ credentials/*
 !credentials/.gitkeep
 .env
 
+# Learned AI project map (local; see project_map.example.yaml)
+project_map.yaml
+
 # Generated reports
 output/*
 !output/.gitkeep

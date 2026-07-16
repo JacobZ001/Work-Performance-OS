@@ -1,6 +1,6 @@
 # Work Performance OS — Roadmap
 
-Version: 0.3  
+Version: 0.4  
 Author: BlueOcean
 
 Living development plan. Update this file when scope or phase status changes.
@@ -21,7 +21,8 @@ Python tool that generates a monthly employee performance report from a Google S
 | Monthly stats, project grouping, activity / submissions, warnings | Done — Phase 1 |
 | Markdown report under `output/` | Done — Phase 1 |
 | AI evaluation (OpenAI / Gemini) in the report | Done — Phase 2 |
-| Employee context for AI (role, expected hours) | **In progress — Phase 2.1** |
+| Employee context for AI (role, expected hours) | Done — Phase 2.1 |
+| AI-maintained project mapping | Done — Phase 2.2 |
 
 CLI only. No GUI, database, auth system, Lark, or GitHub verification yet.
 
@@ -62,7 +63,8 @@ Date is derived from `Start`. Period is a required CLI arg: `YYYY-MM`.
 
 | Location | Contents |
 |----------|----------|
-| `config.yaml` | Sheet id, auth paths, `employee_name`, `employee_context`, keywords, `ai.*` |
+| `config.yaml` | Sheet id, auth paths, `employee_name`, `employee_context`, seed keywords, `project_map_path`, `ai.*` |
+| `project_map.yaml` | Learned keyword → project rules (local; see example) |
 | `.env` | API keys only |
 | `credentials/*.json` | Google OAuth / token (never commit) |
 
@@ -82,21 +84,26 @@ Sheets → stats / projects / activities / submissions / warnings → Markdown.
 - Config: `ai.enabled` / `provider` / `model`
 - Evaluation section in the Markdown report
 
-### Phase 2.1 — Employee context for AI — **Current**
-
-Problem: without role/cadence context, models assume full-time norms and flag normal intern hours (~4h/day, ~25h/week) as suspicious.
-
-Plan:
+### Phase 2.1 — Employee context for AI — **Done**
 
 - [x] `employee_context` in `config.yaml` (free-text role, expected hours, constraints)
 - [x] Inject context into the AI evaluation prompt; instruct model to judge against stated cadence
-- [ ] Harden / iterate after real report runs (optional structured fields later if needed)
 
-### Phase 2.2 — AI project mapping — **Next**
+Optional later: structured fields if free-text proves insufficient.
 
-Replace static `project_keywords` with AI-maintained project mapping. Keep the keyword map small until then; it is temporary scaffolding.
+### Phase 2.2 — AI project mapping — **Done**
 
-### Phase 3 — GitHub verification
+Problem: static `project_keywords` leave most June hours in `Uncategorized`.
+
+Plan:
+
+- [x] Keep `project_keywords` as a seed only
+- [x] Load/save learned rules in `project_map.yaml` (gitignore real file; commit example)
+- [x] When `ai.enabled`, classify unmatched outputs via LLM; merge keyword hints; re-group
+- [x] Fallback to keyword-only if AI off or LLM fails
+- [x] Docs: user_manual + AGENTS
+
+### Phase 3 — GitHub verification — **Next**
 
 GitHub API: commit / PR analysis against described work and reported duration.
 
@@ -116,7 +123,9 @@ work-performance-os/
   report.py
   llm.py
   ai_eval.py
+  project_map.py
   config.yaml
+  project_map.example.yaml
   requirements.txt
   AGENTS.md
   credentials/

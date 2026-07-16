@@ -16,6 +16,13 @@ from dotenv import load_dotenv
 from ai_eval import run_evaluation
 from analyze import build_report
 from llm import create_llm
+from project_map import (
+    enrich_map_with_ai,
+    load_learned_map,
+    merge_keyword_maps,
+    save_learned_map,
+    unmatched_outputs,
+)
 from report import write_report
 from sheets import fetch_work_logs, filter_by_period
 
@@ -102,7 +109,10 @@ def main() -> int:
         employee = config.get("employee_name") or "Employee"
         employee_context = (config.get("employee_context") or "").strip()
         worksheet = config.get("worksheet") or ""
-        keyword_map = config.get("project_keywords") or {}
+        seed_keywords = config.get("project_keywords") or {}
+        map_path = _resolve_path(
+            config.get("project_map_path") or "project_map.yaml"
+        )
         max_session = int(config.get("max_session_minutes") or 360)
         ai_cfg = config.get("ai") or {}
         ai_enabled = bool(ai_cfg.get("enabled"))
@@ -118,25 +128,50 @@ def main() -> int:
         logs = filter_by_period(all_logs, period)
         print(f"Found {len(logs)} row(s) in {period} (of {len(all_logs)} total).")
 
-        report_data = build_report(
-            logs=logs,
-            employee=employee,
-            period=period,
-            keyword_map=keyword_map,
-            max_session_minutes=max_session,
-        )
+        learned = load_learned_map(map_path)
+        keyword_map = merge_keyword_maps(seed_keywords, learned)
+        output_overrides: dict[str, str] = {}
 
+        client = None
+        provider = (ai_cfg.get("provider") or "openai").strip().lower()
+        model = (ai_cfg.get("model") or "").strip()
         if ai_enabled:
-            provider = (ai_cfg.get("provider") or "openai").strip().lower()
-            model = (ai_cfg.get("model") or "").strip()
             if not model:
                 model = (
                     "gemini-2.0-flash"
                     if provider in ("gemini", "google")
                     else "gpt-4o-mini"
                 )
-            print(f"Running AI evaluation ({provider} / {model})…")
             client = create_llm(ai_cfg)
+            pending = unmatched_outputs(logs, keyword_map)
+            if pending:
+                print(
+                    f"Running AI project mapping "
+                    f"({len(pending)} unmatched output(s))…"
+                )
+                keyword_map, output_overrides = enrich_map_with_ai(
+                    client, logs, keyword_map
+                )
+                learned_to_save = {
+                    k: v
+                    for k, v in keyword_map.items()
+                    if seed_keywords.get(k) != v
+                }
+                if learned_to_save != learned:
+                    save_learned_map(map_path, learned_to_save)
+                    print(f"Updated learned project map: {map_path}")
+
+        report_data = build_report(
+            logs=logs,
+            employee=employee,
+            period=period,
+            keyword_map=keyword_map,
+            max_session_minutes=max_session,
+            output_overrides=output_overrides or None,
+        )
+
+        if ai_enabled and client is not None:
+            print(f"Running AI evaluation ({provider} / {model})…")
             report_data.evaluation = run_evaluation(
                 report_data,
                 client,

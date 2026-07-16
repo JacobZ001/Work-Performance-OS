@@ -28,12 +28,14 @@ credentials_path: "credentials/client_secret.json"
 # Saved after first browser login (auto-created)
 token_path: "credentials/token.json"
 
-# Project keywords — MVP TEMPORARY only.
-# Manual keyword → project map for grouping Output text.
-# Phase 2.2: AI will maintain this mapping dynamically (do not treat as long-term source of truth).
+# Project keywords — seed only (Phase 2.2).
+# Manual keyword → project map; AI accumulates more rules in project_map.yaml.
 project_keywords:
   Supplychain: ConstructProcure
   Review: AI Report Generation
+
+# Learned AI project map (auto-updated). See project_map.example.yaml.
+project_map_path: "project_map.yaml"
 
 # Validation
 max_session_minutes: 360

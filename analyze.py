@@ -97,22 +97,31 @@ def compute_stats(logs: list[WorkLog]) -> MonthlyStats:
     )
 
 
-def assign_project(output: str, keyword_map: dict[str, str]) -> str:
-    """MVP: static keyword map. Phase 2: AI-maintained project mapping."""
-    text = (output or "").lower()
+def assign_project(
+    output: str,
+    keyword_map: dict[str, str],
+    output_overrides: dict[str, str] | None = None,
+) -> str:
+    """Assign a project via exact override or keyword substring match."""
+    text = (output or "").strip()
+    if output_overrides and text in output_overrides:
+        return output_overrides[text]
+    lowered = text.lower()
     for keyword, project in keyword_map.items():
-        if keyword.lower() in text:
+        if keyword.lower() in lowered:
             return project
     return "Uncategorized"
 
 
 def group_by_project(
-    logs: list[WorkLog], keyword_map: dict[str, str]
+    logs: list[WorkLog],
+    keyword_map: dict[str, str],
+    output_overrides: dict[str, str] | None = None,
 ) -> list[ProjectBucket]:
     buckets: dict[str, ProjectBucket] = {}
     order: list[str] = []
     for log in logs:
-        name = assign_project(log.output, keyword_map)
+        name = assign_project(log.output, keyword_map, output_overrides)
         if name not in buckets:
             buckets[name] = ProjectBucket(name=name)
             order.append(name)
@@ -194,13 +203,14 @@ def build_report(
     period: str,
     keyword_map: dict[str, str],
     max_session_minutes: int = 360,
+    output_overrides: dict[str, str] | None = None,
 ) -> MonthlyReportData:
     sorted_logs = sorted(logs, key=lambda x: (x.date, x.row_number))
     return MonthlyReportData(
         employee=employee,
         period=period,
         stats=compute_stats(sorted_logs),
-        projects=group_by_project(sorted_logs, keyword_map),
+        projects=group_by_project(sorted_logs, keyword_map, output_overrides),
         activities=sorted_logs,
         submissions=[log for log in sorted_logs if log.link],
         warnings=collect_warnings(sorted_logs, max_session_minutes),
